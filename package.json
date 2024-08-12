@@ -1,0 +1,21 @@
+{
+  "name": "supermouse",
+  "version": "1.0.0",
+  "description": "Supermouse is a lightweight, customizable JavaScript library that enhances cursor interactions on web pages. It replaces the default cursor with a stylish, animated pointer consisting of a dot and ring. Supermouse offers smooth animations, customizable colors and sizes, and responsive hover effects. Perfect for creating engaging, interactive user experiences in modern web applications.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "cursor",
+    "pointer",
+    "animation",
+    "custom-cursor",
+    "mouse",
+    "ui-interaction",
+    "javascript",
+    "web"
+  ],
+  "author": "O.S David",
+  "license": "ISC"
+}
