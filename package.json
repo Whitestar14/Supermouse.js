@@ -4,6 +4,9 @@
   "description": "Supermouse is a lightweight, customizable JavaScript library that enhances cursor interactions on web pages. It replaces the default cursor with a stylish, animated pointer consisting of a dot and ring. Supermouse offers smooth animations, customizable colors and sizes, and responsive hover effects. Perfect for creating engaging, interactive user experiences in modern web applications.",
   "main": "index.js",
   "scripts": {
+    "build": "rollup -c",
+    "lint": "eslint src",
+    "format": "prettier --write 'src/**/*.js'",
     "test": "jest --coverage"
   },
   "keywords": [
@@ -17,5 +20,16 @@
     "web"
   ],
   "author": "O.S David",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "rollup": "^4.20.0"
+  }
 }
