@@ -1,0 +1,105 @@
+// supermouse.scss
+
+// Theme variables
+$themes: (
+  default: (
+    pointer-color: #750c7e,
+    ring-color: #750c7e,
+    hover-color: #e52,
+  ),
+  neon: (
+    pointer-color: #00ff00,
+    ring-color: #ff00ff,
+    hover-color: #00ffff,
+  ),
+  monochrome: (
+    pointer-color: #000000,
+    ring-color: #666666,
+    hover-color: #ffffff,
+  ),
+  sunset: (
+    pointer-color: #ff7e5f,
+    ring-color: #feb47b,
+    hover-color: #ff1361,
+  ),
+  ocean: (
+    pointer-color: #1a8fe3,
+    ring-color: #56ccf2,
+    hover-color: #005c97,
+  )
+);
+
+// Mixin for theme styles
+@mixin themed() {
+  @each $theme, $map in $themes {
+    .supermouse-theme-#{$theme} & {
+      $theme-map: () !global;
+      @each $key, $submap in $map {
+        $value: map-get(map-get($themes, $theme), '#{$key}');
+        $theme-map: map-merge($theme-map, ($key: $value)) !global;
+      }
+      @content;
+      $theme-map: null !global;
+    }
+  }
+}
+
+// Global cursor settings
+html,
+body,
+a, iframe, * {
+  cursor: none !important;
+}
+
+// Base styles
+.ptContainer {
+  position: relative;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.supermouse-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+
+  &__dot {
+    @include themed() {
+      background-color: map-get($theme-map, pointer-color);
+    }
+    top: 0;
+    left: 0;
+    width: 7px;
+    height: 7px;
+    position: fixed;
+    border-radius: 50%;
+    z-index: 101;
+  }
+
+  &__ring {
+    @include themed() {
+      border-color: map-get($theme-map, ring-color);
+    }
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    position: fixed;
+    border: 2px solid;
+    border-radius: 50%;
+    z-index: 102;
+    transition: border 0.5s, transform 800ms;
+  }
+}
+// Hover styles
+.supermouse-cursor__ring:hover {
+  @include themed() {
+    border-color: map-get($theme-map, hover-color);
+  }
+  transform: scale(1.5);
+}
+
+
