@@ -1,20 +1,25 @@
 class Supermouse {
   constructor(options = {}) {
-    this.pointer = null;
-    this.ring = null;
-    this.ptContainer = null;
+    this.options = this.getDefaultOptions({
+      ...options,
+      theme: options.theme || 'default',
+      useAnimation:
+        options.useAnimation !== undefined ? options.useAnimation : true,
+    });
+    this.theme = this.options.theme;
     this.mouseX = -100;
     this.mouseY = -100;
     this.ringX = -100;
     this.ringY = -100;
     this.isHover = false;
     this.mouseDown = false;
-    this.options = this.getDefaultOptions({
-      ...options,
-      useAnimation:
-        options.useAnimation !== undefined ? options.useAnimation : true,
-    });
-    this.theme = options.theme || 'default';
+    this.isRunning = true;
+
+    const { pointer, ring, ptContainer } = this.elementInit();
+    this.pointer = pointer;
+    this.ring = ring;
+    this.ptContainer = ptContainer;
+
     this.applyTheme();
     this.init();
   }
@@ -42,8 +47,11 @@ class Supermouse {
 
   getDefaultOptions(options) {
     return {
+      theme: options.theme || 'default',
       ringSize: options.ringSize || 15,
       ringClickSize: options.ringClickSize || (options.ringSize || 15) - 5,
+      useAnimation:
+        options.useAnimation !== undefined ? options.useAnimation : true,
       animationDuration: options.animationDuration || 200,
       ringAnimationDuration: options.ringAnimationDuration || 600,
       ringAnimationDelay: options.ringAnimationDelay || 200,
@@ -96,9 +104,13 @@ class Supermouse {
   }
 
   render = () => {
+    if (!this.isRunning) return;
+
     const currentTime = performance.now();
     if (currentTime - this.lastRenderTime < 16) {
-      requestAnimationFrame(this.render);
+      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+        window.requestAnimationFrame(this.render);
+      }
       return;
     }
     this.lastRenderTime = currentTime;
@@ -111,29 +123,41 @@ class Supermouse {
       : this.options.ringSize;
 
     if (this.options.useAnimation) {
-      this.pointer.animate(
-        { transform: `translate(${this.mouseX}px, ${this.mouseY}px)` },
-        { duration: this.options.animationDuration, fill: 'forwards' }
-      );
+      if (typeof this.pointer.animate === 'function') {
+        this.pointer.animate(
+          { transform: `translate(${this.mouseX}px, ${this.mouseY}px)` },
+          { duration: this.options.animationDuration, fill: 'forwards' }
+        );
 
-      this.ring.animate(
-        {
-          transform: `translate(${this.ringX - ringSize}px, ${
-            this.ringY - ringSize
-          }px)`,
-        },
-        {
-          duration: this.options.ringAnimationDuration,
-          fill: 'forwards',
-          delay: this.options.ringAnimationDelay,
-        }
-      );
+        this.ring.animate(
+          {
+            transform: `translate(${this.ringX - ringSize}px, ${
+              this.ringY - ringSize
+            }px)`,
+          },
+          {
+            duration: this.options.ringAnimationDuration,
+            fill: 'forwards',
+            delay: this.options.ringAnimationDelay,
+          }
+        );
+      } else {
+        // Fallback for environments without animate support
+        this.pointer.style.transform = `translate(${this.mouseX}px, ${this.mouseY}px)`;
+        this.ring.style.transform = `translate(${this.ringX - ringSize}px, ${
+          this.ringY - ringSize
+        }px)`;
+      }
     } else {
       this.pointer.style.transform = `translate(${this.mouseX}px, ${this.mouseY}px)`;
-      this.ring.style.transform = `translate(${this.ringX}px, ${this.ringY}px)`;
+      this.ring.style.transform = `translate(${this.ringX - ringSize}px, ${
+        this.ringY - ringSize
+      }px)`;
     }
 
-    requestAnimationFrame(this.render);
+    if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+      window.requestAnimationFrame(this.render);
+    }
   };
 
   handleHoverEffects() {
@@ -148,6 +172,25 @@ class Supermouse {
         this.isHover = false;
       });
     });
+  }
+
+  destroy() {
+    this.isRunning = false;
+    this.ptContainer.remove();
+  }
+
+  startAnimation() {
+    this.isRunning = true;
+    this.render();
+  }
+
+  stopAnimation() {
+    this.isRunning = false;
+  }
+
+  setRingSize(size) {
+    this.options.ringSize = size;
+    this.options.ringClickSize = size - 5;
   }
 }
 
