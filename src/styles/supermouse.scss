@@ -1,5 +1,5 @@
 // supermouse.scss
-
+$theme-map: null;
 // Theme variables
 $themes: (
   default: (
@@ -26,7 +26,7 @@ $themes: (
     pointer-color: #1a8fe3,
     ring-color: #56ccf2,
     hover-color: #005c97,
-  )
+  ),
 );
 
 // Mixin for theme styles
@@ -36,9 +36,16 @@ $themes: (
       $theme-map: () !global;
       @each $key, $submap in $map {
         $value: map-get(map-get($themes, $theme), '#{$key}');
-        $theme-map: map-merge($theme-map, ($key: $value)) !global;
+        $theme-map: map-merge(
+          $theme-map,
+          (
+            $key: $value,
+          )
+        ) !global;
       }
-      @content;
+      & {
+        @content;
+      }
       $theme-map: null !global;
     }
   }
@@ -47,7 +54,9 @@ $themes: (
 // Global cursor settings
 html,
 body,
-a, iframe, * {
+a,
+iframe,
+* {
   cursor: none !important;
 }
 
@@ -67,9 +76,6 @@ a, iframe, * {
   z-index: 9999;
 
   &__dot {
-    @include themed() {
-      background-color: map-get($theme-map, pointer-color);
-    }
     top: 0;
     left: 0;
     width: 7px;
@@ -77,12 +83,12 @@ a, iframe, * {
     position: fixed;
     border-radius: 50%;
     z-index: 101;
+    @include themed() {
+      background-color: map-get($theme-map, pointer-color);
+    }
   }
 
   &__ring {
-    @include themed() {
-      border-color: map-get($theme-map, ring-color);
-    }
     top: 0;
     left: 0;
     width: 30px;
@@ -91,15 +97,18 @@ a, iframe, * {
     border: 2px solid;
     border-radius: 50%;
     z-index: 102;
-    transition: border 0.5s, transform 800ms;
+    transition:
+      border 0.5s,
+      transform 800ms;
+    @include themed() {
+      border-color: map-get($theme-map, ring-color);
+    }
   }
 }
 // Hover styles
 .supermouse-cursor__ring:hover {
   @include themed() {
     border-color: map-get($theme-map, hover-color);
+    transform: scale(1.5);
   }
-  transform: scale(1.5);
 }
-
-

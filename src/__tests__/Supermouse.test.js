@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Supermouse from '../Supermouse';
 
 jest.useFakeTimers();
