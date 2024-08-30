@@ -1,3 +1,4 @@
+// @ts-nocheck
 Object.defineProperty(window, 'requestAnimationFrame', {
   writable: true,
   value: jest.fn().mockImplementation((cb) => cb()),
