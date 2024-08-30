@@ -1,3 +1,4 @@
+// @ts-nocheck
 import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import scss from 'rollup-plugin-scss';
