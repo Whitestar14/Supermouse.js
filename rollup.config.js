@@ -36,10 +36,10 @@ export default [
         exclude: 'node_modules/**',
       }),
       scss({
-        output: 'dist/css/Supermouse.css',
+        output: 'dist/css/supermouse.css',
         outputStyle: 'compressed',
         failOnError: true,
-        watch: 'src/styles',
+        watch: 'src/scss',
         sourceMap: true,
       }),
     ],

@@ -60,28 +60,32 @@ iframe,
   cursor: none !important;
 }
 
-// Base styles
-.ptContainer {
-  position: relative;
-  top: 0;
-  left: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Supermouse.scss */
+
+.supermouse-cursor__dot,
+.supermouse-cursor__ring {
+  transition: width 0.2s ease, height 0.2s ease, transform 0.2s ease;
 }
 
+
+// Base styles
 .supermouse-cursor {
+  top: 0;
+  left: 0;
   position: fixed;
   pointer-events: none;
   z-index: 9999;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 
   &__dot {
-    top: 0;
-    left: 0;
-    width: 7px;
-    height: 7px;
     position: fixed;
     border-radius: 50%;
+    pointer-events: none;
+    box-sizing: border-box; // For testing purposes
+    margin: 0;
+    padding: 0;
     z-index: 101;
     @include themed() {
       background-color: map-get($theme-map, pointer-color);
@@ -89,14 +93,14 @@ iframe,
   }
 
   &__ring {
-    top: 0;
-    left: 0;
-    width: 30px;
-    height: 30px;
     position: fixed;
-    border: 2px solid;
+    border: 1px solid;
     border-radius: 50%;
-    z-index: 102;
+    z-index: 100;
+    pointer-events: none;
+    box-sizing: border-box; // For testing purposes
+    margin: 0;
+    padding: 0;
     transition:
       border 0.5s,
       transform 800ms;
