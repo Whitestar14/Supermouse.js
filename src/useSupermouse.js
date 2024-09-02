@@ -1,4 +1,5 @@
 import Supermouse from './Supermouse';
+import { useState, useEffect } from 'react';
 
 function useSupermouse(options = {}) {
   const [supermouse, setSupermouse] = useState(null);

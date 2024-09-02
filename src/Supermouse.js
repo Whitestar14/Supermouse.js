@@ -1,10 +1,9 @@
+import './scss/supermouse.scss';
+
 class Supermouse {
   constructor(options = {}) {
     this.options = this.getDefaultOptions({
       ...options,
-      theme: options.theme || 'default',
-      useAnimation:
-        options.useAnimation !== undefined ? options.useAnimation : true,
     });
     this.theme = this.options.theme;
     this.mouseX = -100;
@@ -31,11 +30,12 @@ class Supermouse {
   }
 
   setTheme(theme) {
-    const validTheme = ['default', 'neon', 'monochrome', 'sunset', 'ocean'];
-    if (validTheme.includes(theme)) {
+    const validThemes = ['default', 'neon', 'monochrome', 'sunset', 'ocean'];
+    // @ts-ignore
+    if (validThemes.includes(theme) && theme !== this.theme) {
       this.theme = theme;
       this.applyTheme();
-    } else {
+    } else if (!validThemes.includes(theme)) {
       console.warn(
         `Theme "${theme}" specified not found. Reverting to default theme option.`
       );
@@ -49,21 +49,19 @@ class Supermouse {
     return {
       theme: options.theme || 'default',
       ringSize: options.ringSize || 15,
+      pointerSize: options.pointerSize || 5,
       ringClickSize: options.ringClickSize || (options.ringSize || 15) - 5,
       useAnimation:
         options.useAnimation !== undefined ? options.useAnimation : true,
       animationDuration: options.animationDuration || 200,
       ringAnimationDuration: options.ringAnimationDuration || 600,
       ringAnimationDelay: options.ringAnimationDelay || 200,
+      ringSmoothness: options.ringSmoothness || 0.2,
+      ringThickness: options.ringThickness || 2,
     };
   }
 
   init() {
-    const { pointer, ring, ptContainer } = this.elementInit();
-    this.pointer = pointer;
-    this.ring = ring;
-    this.ptContainer = ptContainer;
-
     this.ptContainer.appendChild(this.pointer);
     this.ptContainer.appendChild(this.ring);
     document.body.insertBefore(this.ptContainer, document.body.children[0]);
@@ -115,25 +113,41 @@ class Supermouse {
     }
     this.lastRenderTime = currentTime;
 
-    this.ringX = this.trace(this.ringX, this.mouseX, 0.2);
-    this.ringY = this.trace(this.ringY, this.mouseY, 0.2);
-
     const ringSize = this.mouseDown
       ? this.options.ringClickSize
       : this.options.ringSize;
+    const dotSize = this.options.pointerSize;
 
     if (this.options.useAnimation) {
+      // When useAnimation is true, we rely on CSS animations.
+
+      this.ringX = this.trace(
+        this.ringX,
+        this.mouseX,
+        this.options.ringSmoothness
+      );
+      this.ringY = this.trace(
+        this.ringY,
+        this.mouseY,
+        this.options.ringSmoothness
+      );
+
       if (typeof this.pointer.animate === 'function') {
         this.pointer.animate(
-          { transform: `translate(${this.mouseX}px, ${this.mouseY}px)` },
+          {
+            transform: `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`,
+            width: `${dotSize}px`,
+            height: `${dotSize}px`,
+          },
           { duration: this.options.animationDuration, fill: 'forwards' }
         );
 
         this.ring.animate(
           {
-            transform: `translate(${this.ringX - ringSize}px, ${
-              this.ringY - ringSize
-            }px)`,
+            transform: `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`,
+            width: `${ringSize}px`,
+            height: `${ringSize}px`,
+            borderWidth: `${this.options.ringThickness}px`,
           },
           {
             duration: this.options.ringAnimationDuration,
@@ -143,21 +157,38 @@ class Supermouse {
         );
       } else {
         // Fallback for environments without animate support
-        this.pointer.style.transform = `translate(${this.mouseX}px, ${this.mouseY}px)`;
-        this.ring.style.transform = `translate(${this.ringX - ringSize}px, ${
-          this.ringY - ringSize
-        }px)`;
+        // When useAnimation is false, we manually update the position using trace.
+        const ringSize = this.mouseDown
+          ? this.options.ringClickSize
+          : this.options.ringSize;
+        const dotSize = this.options.pointerSize;
+
+        this.ringX = this.trace(this.ringX, this.mouseX, 1);
+        this.ringY = this.trace(this.ringY, this.mouseY, 1);
+        this.pointer.style.transform = `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`;
+        this.pointer.style.width = `${dotSize}px`;
+        this.pointer.style.height = `${dotSize}px`;
+
+        this.ring.style.transform = `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`;
+        this.ring.style.width = `${ringSize}px`;
+        this.ring.style.height = `${ringSize}px`;
+        this.ring.style.borderWidth = `${this.options.ringThickness}px`;
       }
     } else {
-      this.pointer.style.transform = `translate(${this.mouseX}px, ${this.mouseY}px)`;
-      this.ring.style.transform = `translate(${this.ringX - ringSize}px, ${
-        this.ringY - ringSize
-      }px)`;
+      // When useAnimation is false, we manually update the position using trace.
+      this.ringX = this.trace(this.ringX, this.mouseX, 1);
+      this.ringY = this.trace(this.ringY, this.mouseY, 1);
+      this.pointer.style.transform = `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`;
+      this.pointer.style.width = `${dotSize}px`;
+      this.pointer.style.height = `${dotSize}px`;
+
+      this.ring.style.transform = `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`;
+      this.ring.style.width = `${ringSize}px`;
+      this.ring.style.height = `${ringSize}px`;
+      this.ring.style.borderWidth = `${this.options.ringThickness}px`;
     }
 
-    if (typeof window !== 'undefined' && window.requestAnimationFrame) {
-      window.requestAnimationFrame(this.render);
-    }
+    requestAnimationFrame(this.render);
   };
 
   handleHoverEffects() {
@@ -188,9 +219,35 @@ class Supermouse {
     this.isRunning = false;
   }
 
-  setRingSize(size) {
-    this.options.ringSize = size;
-    this.options.ringClickSize = size - 5;
+  // Preserving legacy features
+  
+  setPointerSize(size, clickSize = size) {
+    this.options.dimensions.pointer = [size, size];
+    this.options.pointerClickSize = [clickSize, clickSize];
+  }
+
+  setRingSize(size, clickSize = size) {
+    this.options.dimensions.ring = [size, size];
+    this.options.ringClickSize = [clickSize, clickSize];
+  }
+
+  setRingSmoothness(smoothness) {
+    this.options.ringSmoothness = smoothness;
+  }
+
+  setAnimationDuration(duration) {
+    this.options.animationDuration = duration;
+    return this;
+  }
+
+  setRingAnimationDuration(duration) {
+    this.options.ringAnimationDuration = duration;
+    return this;
+  }
+
+  setRingAnimationDelay(delay) {
+    this.options.ringAnimationDelay = delay;
+    return this;
   }
 }
 
