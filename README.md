@@ -227,4 +227,4 @@ For further assistance, please open an issue on our GitHub repository.
 
 ## License
 
-ISC License
+MIT License

@@ -9,22 +9,22 @@ export default [
     input: 'src/Supermouse.js',
     output: [
       {
-        file: 'dist/supermouse.js',
+        file: 'dist/js/Supermouse.js',
         format: 'umd',
         name: 'Supermouse',
       },
       {
-        file: 'dist/supermouse.min.js',
+        file: 'dist/js/Supermouse.min.js',
         format: 'umd',
-        name: 'Supermouse',
+        name: 'supermouse',
         plugins: [terser()],
       },
       {
-        file: 'dist/supermouse.esm.js',
+        file: 'dist/js/Supermouse.esm.js',
         format: 'es',
       },
       {
-        file: 'dist/supermouse.esm.min.js',
+        file: 'dist/js/Supermouse.esm.min.js',
         format: 'es',
         plugins: [terser()],
       },
@@ -36,7 +36,7 @@ export default [
         exclude: 'node_modules/**',
       }),
       scss({
-        output: 'dist/supermouse.css',
+        output: 'dist/css/Supermouse.css',
         outputStyle: 'compressed',
         failOnError: true,
         watch: 'src/styles',
