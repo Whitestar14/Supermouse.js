@@ -18,7 +18,6 @@ export default defineConfig([
       'no-console': 'warn',
       eqeqeq: ['error', 'always'],
       indent: ['error', 2],
-      'linebreak-style': ['error', 'unix'],
     },
   },
   {

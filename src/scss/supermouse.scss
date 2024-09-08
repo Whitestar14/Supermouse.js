@@ -60,6 +60,11 @@ iframe,
   cursor: none !important;
 }
 
+body .supermouse-cursor {
+  opacity: 1;
+  transition: opacity 600ms ease;
+}
+
 /* Supermouse.scss */
 
 .supermouse-cursor__dot,
@@ -73,6 +78,7 @@ iframe,
   top: 0;
   left: 0;
   position: fixed;
+  opacity: 0;
   pointer-events: none;
   z-index: 9999;
   box-sizing: border-box;

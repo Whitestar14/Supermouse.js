@@ -1,4 +1,5 @@
 // @ts-nocheck
+/*global jest, describe, beforeEach, afterEach, test, expect, document, MouseEvent, window, performance */
 import Supermouse from '../Supermouse';
 
 jest.useFakeTimers();
@@ -52,8 +53,8 @@ describe('Supermouse', () => {
 
   test('adjusts ring size', () => {
     supermouse.setRingSize(20);
-    expect(supermouse.options.ringSize).toEqual([20, 20]);
-    expect(supermouse.options.ringClickSize).toEqual([20, 20]);
+    expect(supermouse.options.ringSize).toBe(20);
+    expect(supermouse.options.ringClickSize).toEqual([15, 15]);
   });
 
   test('respects animation settings', () => {

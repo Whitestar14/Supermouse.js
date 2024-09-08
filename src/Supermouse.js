@@ -170,7 +170,7 @@ class Supermouse {
 
     const currentTime = performance.now();
     if (currentTime - this.lastRenderTime < 16) {
-      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+      if (!this.isDefined(window) && window.requestAnimationFrame) {
         window.requestAnimationFrame(this.render);
       }
       return;
@@ -321,13 +321,24 @@ class Supermouse {
   setPointerSize(size, clickSize = size) {
     this.options.pointerSize = [size, size];
     this.options.dimensions.pointer = [size, size];
-    this.options.pointerClickSize = [clickSize, clickSize];
+    if (this.isDefined(clickSize)) {
+      return;
+    } else {
+      this.options.pointerClickSize = [clickSize, clickSize];
+    }
+  }
+
+  isDefined(elem) {
+    return typeof elem === undefined;
   }
 
   setRingSize(size, clickSize = size) {
     this.options.ringSize = [size, size];
     this.options.dimensions.ring = [size, size];
-    this.options.ringClickSize = [clickSize, clickSize];
+    this.options.ringClickSize =
+      this.options.ringClickSize !== 'undefined'
+        ? this.options.ringClickSize
+        : [clickSize, clickSize];
   }
 
   setRingSmoothness(smoothness) {
