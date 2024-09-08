@@ -19,7 +19,7 @@ describe('Supermouse', () => {
 
   test('initializes with default options', () => {
     expect(supermouse.options.theme).toBe('default');
-    expect(supermouse.options.ringSize).toBe(15);
+    expect(supermouse.options.ringSize).toEqual([15, 15]);
     expect(supermouse.options.useAnimation).toBe(true);
   });
 
@@ -52,8 +52,8 @@ describe('Supermouse', () => {
 
   test('adjusts ring size', () => {
     supermouse.setRingSize(20);
-    expect(supermouse.options.ringSize).toBe(20);
-    expect(supermouse.options.ringClickSize).toBe(15);
+    expect(supermouse.options.ringSize).toEqual([20, 20]);
+    expect(supermouse.options.ringClickSize).toEqual([20, 20]);
   });
 
   test('respects animation settings', () => {

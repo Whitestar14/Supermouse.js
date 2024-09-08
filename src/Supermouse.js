@@ -46,11 +46,34 @@ class Supermouse {
   }
 
   getDefaultOptions(options) {
+    const defaultPointerSize = 5;
+    const defaultRingSize = 15;
+
+    // Use pointerSize and ringSize if provided, otherwise fallback to dimensions or defaults
+    const pointerDimensions = options.pointerSize
+      ? [options.pointerSize, options.pointerSize]
+      : Array.isArray(options.dimensions?.pointer)
+        ? options.dimensions.pointer
+        : [defaultPointerSize, defaultPointerSize];
+
+    const ringDimensions = options.ringSize
+      ? [options.ringSize, options.ringSize]
+      : Array.isArray(options.dimensions?.ring)
+        ? options.dimensions.ring
+        : [defaultRingSize, defaultRingSize];
+
     return {
       theme: options.theme || 'default',
-      ringSize: options.ringSize || 15,
-      pointerSize: options.pointerSize || 5,
-      ringClickSize: options.ringClickSize || (options.ringSize || 15) - 5,
+      ringSize: options.ringSize || ringDimensions,
+      pointerSize: options.pointerSize || pointerDimensions,
+      ringClickSize: options.ringClickSize || [
+        ringDimensions[0] - 5,
+        ringDimensions[1] - 5,
+      ],
+      pointerClickSize: options.pointerClickSize || [
+        pointerDimensions[0],
+        pointerDimensions[1],
+      ],
       useAnimation:
         options.useAnimation !== undefined ? options.useAnimation : true,
       animationDuration: options.animationDuration || 200,
@@ -58,6 +81,10 @@ class Supermouse {
       ringAnimationDelay: options.ringAnimationDelay || 200,
       ringSmoothness: options.ringSmoothness || 0.2,
       ringThickness: options.ringThickness || 2,
+      dimensions: {
+        pointer: pointerDimensions,
+        ring: ringDimensions,
+      },
     };
   }
 
@@ -101,6 +128,43 @@ class Supermouse {
     return (1 - n) * a + n * b;
   }
 
+  setDimensions(pointerDimensions, ringDimensions) {
+    // Check if the arguments are arrays or single values
+    if (Array.isArray(pointerDimensions)) {
+      this.options.dimensions.pointer = pointerDimensions;
+    } else {
+      this.options.dimensions.pointer = [pointerDimensions, pointerDimensions];
+    }
+
+    if (Array.isArray(ringDimensions)) {
+      this.options.dimensions.ring = ringDimensions;
+    } else {
+      this.options.dimensions.ring = [ringDimensions, ringDimensions];
+    }
+
+    // Update the pointer and ring click size based on new dimensions
+    this.options.pointerClickSize = [
+      this.options.dimensions.pointer[0],
+      this.options.dimensions.pointer[1],
+    ];
+
+    this.options.ringClickSize = [
+      this.options.dimensions.ring[0] - 5,
+      this.options.dimensions.ring[1] - 5,
+    ];
+
+    // Update the styles of the pointer and ring elements immediately
+    this.pointer.style.width = `${this.options.dimensions.pointer[0]}px`;
+    this.pointer.style.height = `${this.options.dimensions.pointer[1]}px`;
+
+    this.ring.style.width = `${this.options.dimensions.ring[0]}px`;
+    this.ring.style.height = `${this.options.dimensions.ring[1]}px`;
+
+    // Reposition the pointer and ring to ensure they're centered correctly
+    this.pointer.style.transform = `translate(${this.mouseX - this.options.dimensions.pointer[0] / 2}px, ${this.mouseY - this.options.dimensions.pointer[1] / 2}px)`;
+    this.ring.style.transform = `translate(${this.ringX - this.options.dimensions.ring[0] / 2}px, ${this.ringY - this.options.dimensions.ring[1] / 2}px)`;
+  }
+
   render = () => {
     if (!this.isRunning) return;
 
@@ -113,10 +177,13 @@ class Supermouse {
     }
     this.lastRenderTime = currentTime;
 
-    const ringSize = this.mouseDown
+    const [pointerWidth, pointerHeight] = this.mouseDown
+      ? this.options.pointerClickSize
+      : this.options.dimensions.pointer;
+
+    const [ringWidth, ringHeight] = this.mouseDown
       ? this.options.ringClickSize
-      : this.options.ringSize;
-    const dotSize = this.options.pointerSize;
+      : this.options.dimensions.ring;
 
     if (this.options.useAnimation) {
       // When useAnimation is true, we rely on CSS animations.
@@ -132,21 +199,27 @@ class Supermouse {
         this.options.ringSmoothness
       );
 
+      const pointerX = this.mouseX - pointerWidth / 2;
+      const pointerY = this.mouseY - pointerHeight / 2;
+
+      const ringX = this.ringX - ringWidth / 2;
+      const ringY = this.ringY - ringHeight / 2;
+
       if (typeof this.pointer.animate === 'function') {
         this.pointer.animate(
           {
-            transform: `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`,
-            width: `${dotSize}px`,
-            height: `${dotSize}px`,
+            transform: `translate(${pointerX}px, ${pointerY}px)`,
+            width: `${pointerWidth}px`,
+            height: `${pointerHeight}px`,
           },
           { duration: this.options.animationDuration, fill: 'forwards' }
         );
 
         this.ring.animate(
           {
-            transform: `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`,
-            width: `${ringSize}px`,
-            height: `${ringSize}px`,
+            transform: `translate(${ringX}px, ${ringY}px)`,
+            width: `${ringWidth}px`,
+            height: `${ringHeight}px`,
             borderWidth: `${this.options.ringThickness}px`,
           },
           {
@@ -158,33 +231,57 @@ class Supermouse {
       } else {
         // Fallback for environments without animate support
         // When useAnimation is false, we manually update the position using trace.
-        const ringSize = this.mouseDown
-          ? this.options.ringClickSize
-          : this.options.ringSize;
-        const dotSize = this.options.pointerSize;
+        this.ringX = this.trace(
+          this.ringX,
+          this.mouseX,
+          this.options.ringSmoothness
+        );
+        this.ringY = this.trace(
+          this.ringY,
+          this.mouseY,
+          this.options.ringSmoothness
+        );
+        const pointerX = this.mouseX - pointerWidth / 2;
+        const pointerY = this.mouseY - pointerHeight / 2;
 
-        this.ringX = this.trace(this.ringX, this.mouseX, 1);
-        this.ringY = this.trace(this.ringY, this.mouseY, 1);
-        this.pointer.style.transform = `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`;
-        this.pointer.style.width = `${dotSize}px`;
-        this.pointer.style.height = `${dotSize}px`;
+        const ringX = this.ringX - ringWidth / 2;
+        const ringY = this.ringY - ringHeight / 2;
 
-        this.ring.style.transform = `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`;
-        this.ring.style.width = `${ringSize}px`;
-        this.ring.style.height = `${ringSize}px`;
+        this.pointer.style.transform = `translate(${pointerX}px, ${pointerY}px)`;
+        this.pointer.style.width = `${pointerWidth}px`;
+        this.pointer.style.height = `${pointerHeight}px`;
+
+        this.ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
+        this.ring.style.width = `${ringWidth}px`;
+        this.ring.style.height = `${ringHeight}px`;
         this.ring.style.borderWidth = `${this.options.ringThickness}px`;
       }
     } else {
       // When useAnimation is false, we manually update the position using trace.
-      this.ringX = this.trace(this.ringX, this.mouseX, 1);
-      this.ringY = this.trace(this.ringY, this.mouseY, 1);
-      this.pointer.style.transform = `translate(${this.mouseX - dotSize / 2}px, ${this.mouseY - dotSize / 2}px)`;
-      this.pointer.style.width = `${dotSize}px`;
-      this.pointer.style.height = `${dotSize}px`;
+      this.ringX = this.trace(
+        this.ringX,
+        this.mouseX,
+        this.options.ringSmoothness
+      );
+      this.ringY = this.trace(
+        this.ringY,
+        this.mouseY,
+        this.options.ringSmoothness
+      );
 
-      this.ring.style.transform = `translate(${this.ringX - ringSize / 2}px, ${this.ringY - ringSize / 2}px)`;
-      this.ring.style.width = `${ringSize}px`;
-      this.ring.style.height = `${ringSize}px`;
+      const pointerX = this.mouseX - pointerWidth / 2;
+      const pointerY = this.mouseY - pointerHeight / 2;
+
+      const ringX = this.ringX - ringWidth / 2;
+      const ringY = this.ringY - ringHeight / 2;
+
+      this.pointer.style.transform = `translate(${pointerX}px, ${pointerY}px)`;
+      this.pointer.style.width = `${pointerWidth}px`;
+      this.pointer.style.height = `${pointerHeight}px`;
+
+      this.ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
+      this.ring.style.width = `${ringWidth}px`;
+      this.ring.style.height = `${ringHeight}px`;
       this.ring.style.borderWidth = `${this.options.ringThickness}px`;
     }
 
@@ -219,14 +316,16 @@ class Supermouse {
     this.isRunning = false;
   }
 
-  // Preserving legacy features
-  
+  // Preserving legacy feataures
+
   setPointerSize(size, clickSize = size) {
+    this.options.pointerSize = [size, size];
     this.options.dimensions.pointer = [size, size];
     this.options.pointerClickSize = [clickSize, clickSize];
   }
 
   setRingSize(size, clickSize = size) {
+    this.options.ringSize = [size, size];
     this.options.dimensions.ring = [size, size];
     this.options.ringClickSize = [clickSize, clickSize];
   }
