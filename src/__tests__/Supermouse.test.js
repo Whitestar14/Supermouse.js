@@ -1,6 +1,8 @@
 // @ts-nocheck
 import Supermouse from '../Supermouse';
 
+console.log("TRPLX contributed");
+
 jest.useFakeTimers();
 
 describe('Supermouse', () => {
