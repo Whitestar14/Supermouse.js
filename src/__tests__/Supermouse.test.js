@@ -2,6 +2,8 @@
 /*global jest, describe, beforeEach, afterEach, test, expect, document, MouseEvent, window, performance */
 import Supermouse from '../Supermouse';
 
+console.log("TRPLX contributed");
+
 jest.useFakeTimers();
 
 describe('Supermouse', () => {
